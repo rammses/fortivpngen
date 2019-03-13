@@ -9,14 +9,12 @@ __author__      = "Mesut Bayrak"
 __copyright__ = "Copyright 2016, Planet Earth"
 
 
-import argparse, secrets, string
+import argparse, secrets, string, paramiko, time, logging
 
 def config_data():
     with open('./config.yml', 'r') as ymlfile:
         config_data = yaml.load(ymlfile)
     return config_data
-import paramiko, time, logging
-
 
 
 def SendAndCheck(_host,_port,_username,_password,_command):
@@ -48,19 +46,24 @@ def SendAndCheck(_host,_port,_username,_password,_command):
         output_list = [item.strip('\\n') for item in remove_trails]
 
         # Error checking
-        if 'Command fail.' or 'Unknown action' in str(output_list):
+        if 'Command fail.' in str(output_list):
+            print('Command fail catched', str(output_list))
             print('error in command closing channel')
             success = False
+            return success
+        if  'Unknown action' in str(output_list):
+            print('Unknown action catched', str(output_list))
+            print('error in command closing channel')
+            success = False
+            # return success
         else:
-            print(output_list)
+            print(str(output_list))
             print('command sent\n\n')
             item_number = item_number + 1
             success = True
     channel.close()
     ssh.close()
     return success
-
-
 
 def generatedpsk(secret_length):
     stringSource = string.ascii_letters + string.digits + string.punctuation
@@ -98,14 +101,13 @@ args = parser.parse_args()
 
 if args.create:
     print("your password is :", generatedpsk(16))
-    Script1 = ['config vpn ipsec phase1-interface\n',
-               'edit Datacenter\n',
-               'set forticlient-enforcement asd\n']
+    Script1 = ['get system status\n',]
     test = SendAndCheck('192.168.17.1', '2222', 'testuser', '12qwasZX', Script1)
     print(test)
 
 elif args.delete:
     print("delete")
+
 elif args.list:
     print('list')
 
