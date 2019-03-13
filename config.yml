@@ -1,0 +1,19 @@
+Credentials:
+  user: 'testuser'
+  pass: 'testpass'
+
+Phase1-interface:
+  ikever : 'ike-version 2'
+  dhgrp : 'dhgrp 2'
+  proposal : '3des-md5'
+
+Phase2-interface:
+  keepalive: True
+  dhgrp : 'dhgrp 14'
+  proposal: '3des-md5'
+
+Staticroute:
+  prefix : '998'
+
+Firewall:
+  prefix: '998'

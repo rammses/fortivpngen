@@ -95,13 +95,39 @@ parser.add_argument('-L','--list',
                     required=False,
                     help='lists vpn tunnels requires no parameter --detail shows tunnel status')
 
-
+parser.add_argument('-S','--selector',
+                    required=False,
+                    help='Switch for selector based tunnels')
 
 args = parser.parse_args()
 
 if args.create:
     print("your password is :", generatedpsk(16))
-    Script1 = ['get system status\n',]
+
+    Script1 = ['config vpn ipsec phase1-interface\n',
+               'edit Datacenter\n',
+               'set forticlient-enforcement asd\n']
+    Script2 = ['get system status\n',]
+
+    Script3 = ['config vpn ipsec phase1-interface',
+               'edit "Datacenter',
+               'set interface "wan1"',
+               'set ike-version 2',
+               'set dhgrp 2',
+               'set proposal 3des-md5',
+               'set remote-gw 185.141.110.220',
+               'set psksecret ENC 24l+Ll/2UUxhMVZKebtODmW3etuRWxiZ0xR4ZMNyXFmPPRv9jDblOnDP3Inb6HnAA7jbzeQQaxosCLEp7BVYnhZn/TF/Eu+p2rLHDn0oK+h0dBBK'
+               'next',
+               'end',
+               'config vpn ipsec phase2-interface',
+               'edit "datacenter"',
+               'set keepalive enable',
+               'set phase1name "Datacenter"',
+               'set proposal 3des-sha1',
+               'set dhgrp 14',
+               'next',
+               'end']
+
     test = SendAndCheck('192.168.17.1', '2222', 'testuser', '12qwasZX', Script1)
     print(test)
 
@@ -112,33 +138,3 @@ elif args.list:
     print('list')
 
 
-
-
-
-
-
-    """
-config vpn ipsec phase1-interface
-    edit "Datacenter"
-        set interface "wan1"
-        set ike-version 2
-        set dhgrp 2
-        set proposal 3des-md5
-        set remote-gw 185.141.110.220
-        set psksecret ENC 24l+Ll/2UUxhMVZKebtODmW3etuRWxiZ0xR4ZMNyXFmPPRv9jDblOnDP3Inb6HnAA7jbzeQQaxosCLEp7BVYnhZn/TF/Eu+p2rLHDn0oK+h0dBBK
-    next
-end
-
-    """
-
-    """
-    
-config vpn ipsec phase2-interface
-    edit "datacenter"
-        set keepalive enable
-        set phase1name "Datacenter"
-        set proposal 3des-sha1
-        set dhgrp 14
-    next
-end
-    """
