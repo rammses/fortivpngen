@@ -6,6 +6,7 @@ Phase1-interface:
   ikever : 'ike-version 2'
   dhgrp : 'dhgrp 2'
   proposal : '3des-md5'
+  passlength: '16'
 
 Phase2-interface:
   keepalive: True
