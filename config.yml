@@ -1,15 +1,17 @@
 Credentials:
+  firewall: '192.168.17.1'
+  port: '2222'
   user: 'testuser'
-  pass: 'testpass'
+  pass: '12qwasZX'
 
 Phase1-interface:
-  ikever : 'ike-version 2'
+  ikever : "ike-version 2"
   dhgrp : 'dhgrp 2'
   proposal : '3des-md5'
   passlength: '16'
 
 Phase2-interface:
-  keepalive: True
+  keepalive: enable
   dhgrp : 'dhgrp 14'
   proposal: '3des-md5'
 
