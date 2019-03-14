@@ -1,4 +1,6 @@
 argparse
-Fabric3
 pyyaml
 string
+string
+paramiko
+pyyaml
