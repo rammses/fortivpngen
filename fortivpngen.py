@@ -9,7 +9,7 @@ __author__      = "Mesut Bayrak"
 __copyright__ = "Copyright 2016, Planet Earth"
 
 
-import argparse, secrets, string, paramiko, time, logging
+import argparse, secrets, string, paramiko, time, logging, yaml
 
 def config_data():
     with open('./config.yml', 'r') as ymlfile:
@@ -78,6 +78,10 @@ def generatedpsk(secret_length):
     password = ''.join(char_list)
     return password
 
+#Read config data from yml
+config = config_data()
+
+#Structure parameter processing
 
 parser = argparse.ArgumentParser(description='Creates vpn tunnels')
 
@@ -85,7 +89,7 @@ parser = argparse.ArgumentParser(description='Creates vpn tunnels')
 parser.add_argument('-C','--create',
                     nargs='+',
                     required=False,
-                    help='vpn tunnel creator requires 6 parameters name, interfece,remote gatewayip, source net, destination net')
+                    help='vpn tunnel creator requires 5 parameters name, interfece,remote gatewayip, source net, destination net')
 
 parser.add_argument('-D','--delete',
                     required=False,
@@ -99,37 +103,74 @@ parser.add_argument('-S','--selector',
                     required=False,
                     help='Switch for selector based tunnels')
 
+parser.add_argument('-V','--verbose',
+                    required=False,
+                    help='Switch for selector based tunnels')
+
 args = parser.parse_args()
 
+
+#Switch operations
+
 if args.create:
-    print("your password is :", generatedpsk(16))
+    _tunnelname = args.create[0]
+    _tunnelint= args.create[1]
+    _tunneldest= args.create[2]
+    _tunnellocal = args.create[3]
+    _tunnelremote = args.create[4]
 
-    Script1 = ['config vpn ipsec phase1-interface\n',
-               'edit Datacenter\n',
-               'set forticlient-enforcement asd\n']
-    Script2 = ['get system status\n',]
+    #Construtction of script for vpn
+    _Script_add_tunnel = ['config vpn ipsec phase1-interface'+'\n',
+               'edit '+_tunnelname+'\n',
+               'set interface '+_tunnelint+'\n',
+               'set '+ config['Phase1-interface']['ikever']+'\n',
+               'set '+ config['Phase1-interface']['dhgrp']+'\n',
+               'set proposal '+config['Phase1-interface']['proposal']+'\n',
+               'set remote-gw '+ _tunneldest+'\n',
+               'set psk '+generatedpsk(16)+'\n',
+               'end'+'\n',
+               'config vpn ipsec phase2-interface'+'\n',
+               'edit '+_tunnelname+'-p2\n',
+               'set keepalive '+config['Phase2-interface']['keepalive']+'\n',
+               'set phase1name '+_tunnelname+'\n',
+               'set proposal '+config['Phase2-interface']['proposal']+'\n',
+               'set '+config['Phase2-interface']['dhgrp']+'\n',
+               'next'+'\n',
+               'end'+'\n',]
 
-    Script3 = ['config vpn ipsec phase1-interface',
-               'edit "Datacenter',
-               'set interface "wan1"',
-               'set ike-version 2',
-               'set dhgrp 2',
-               'set proposal 3des-md5',
-               'set remote-gw 185.141.110.220',
-               'set psksecret ENC 24l+Ll/2UUxhMVZKebtODmW3etuRWxiZ0xR4ZMNyXFmPPRv9jDblOnDP3Inb6HnAA7jbzeQQaxosCLEp7BVYnhZn/TF/Eu+p2rLHDn0oK+h0dBBK'
-               'next',
-               'end',
-               'config vpn ipsec phase2-interface',
-               'edit "datacenter"',
-               'set keepalive enable',
-               'set phase1name "Datacenter"',
-               'set proposal 3des-sha1',
-               'set dhgrp 14',
-               'next',
-               'end']
+    _Script_add_tunnel_with_route = ['config vpn ipsec phase1-interface' + '\n',
+                                     'edit ' + _tunnelname + '\n',
+                                     'set interface ' + _tunnelint + '\n',
+                                     'set ' + config['Phase1-interface']['ikever'] + '\n',
+                                     'set ' + config['Phase1-interface']['dhgrp'] + '\n',
+                                     'set proposal ' + config['Phase1-interface']['proposal'] + '\n',
+                                     'set remote-gw ' + _tunneldest + '\n',
+                                     'set psk ' + generatedpsk(16) + '\n',
+                                     'end' + '\n',
+                                     'config vpn ipsec phase2-interface' + '\n',
+                                     'edit ' + _tunnelname + '-p2\n',
+                                     'set keepalive ' + config['Phase2-interface']['keepalive'] + '\n',
+                                     'set phase1name ' + _tunnelname + '\n',
+                                     'set proposal ' + config['Phase2-interface']['proposal'] + '\n',
+                                     'set ' + config['Phase2-interface']['dhgrp'] + '\n',
+                                     'next' + '\n',
+                                     'end' + '\n',
+                                     'config router static',
+                                     'edit ' + config['Staticroute']['prefix'] + '\n',
+                                     'set comment "' + _tunnelname + _tunnelremote + '\n',
+                                     'set device ' + _tunnelname + '\n',
+                                     'set dst ' + _tunnelremote + '\n',
+                                     'next']
 
-    test = SendAndCheck('192.168.17.1', '2222', 'testuser', '12qwasZX', Script1)
-    print(test)
+    #Read credential config
+    _firewall = config['Credentials']['firewall']
+    _fwport = config['Credentials']['port']
+    _fwuser = config['Credentials']['user']
+    _fwpass = config['Credentials']['pass']
+
+    addnew_tunnel = SendAndCheck(_firewall, _fwport, _fwuser, _fwpass, _Script_add_tunnel)
+    print(_firewall, _fwport, _fwuser, _fwpass, _Script_add_tunnel)
+    print(addnew_tunnel)
 
 elif args.delete:
     print("delete")
