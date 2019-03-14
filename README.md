@@ -6,7 +6,7 @@ puppet, chef
 A yaml config file for constants
  
 generated key length
-Certificate location certificates must be same name with tunnel and a .crt 
+ 
 
 phase1 encryption details
 tunnel mode Aggressive/Main
@@ -65,5 +65,22 @@ Takes parameters necessary for creating phase1 and phase2 tunnel. Based on tunne
     
     fortivpngen --delete my_first_tunnel 
 
+## config.yml file explained
+Ipsec vpn tunnels are constructed on 2 phases first one makes sure of peers
+second one deals with key exchange and encryption of data details.
+
+As usual using the latest encryption methods are  always prefered.
+At some cases you can overload the processors on devices. When this happens you may need to lower cpu burden by lowering encryption standards
+
+Or you may need to integrate an older device to your network. 
+In any case you can change the complexity levels from the yaml file. 
+After you do a change in yaml make sure that you note the date because after the change every new tunnel is going to have a different configuration
+
+The guts of file are pretty self explanatory. 
 
 
+### todo 
+- Certificate generation and auto upload.
+- Selector based vpn tunnels
+- Auto rule creation
+- Auto Route creation
