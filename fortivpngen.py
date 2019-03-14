@@ -78,9 +78,9 @@ def ListTunnels(_host,_port,_username,_password,_command):
     output_list=''
     for item in _command:
 
-        print('log output', output_list)
-        print('positive action chosen cycle :', item_number)
-        print('the command to send :', _command[item_number])
+        # print('log output', output_list)
+        # print('positive action chosen cycle :', item_number)
+        # print('the command to send :', _command[item_number])
 
         # Sending command
         corrected_command = str(_command[item_number])
@@ -92,6 +92,14 @@ def ListTunnels(_host,_port,_username,_password,_command):
         new_text = str(output)
         remove_trails = new_text.split('\\r')
         output_list = [item.strip('\\n') for item in remove_trails]
+        # print('item count in list:',len(output_list))
+        k=len(output_list)
+        # print(k-3)
+        tunnel_list=[]
+        for s in range(2, k-2):
+            tunnel_list.append(output_list[s])
+            # print(output_list[s])
+
 
         # Error checking
         if 'Command fail.' in str(output_list):
@@ -105,13 +113,13 @@ def ListTunnels(_host,_port,_username,_password,_command):
             success = False
             # return success
         else:
-            print(str(output_list))
-            print('command sent\n\n')
+            # print(str(output_list))
+            # print('command sent\n\n')
             item_number = item_number + 1
             success = True
     channel.close()
     ssh.close()
-    return output_list
+    return tunnel_list
 
 def generatedpsk(secret_length):
     stringSource = string.ascii_letters + string.digits + string.punctuation
@@ -219,9 +227,27 @@ if args.create:
 
 elif args.delete:
     print("delete")
+    _del_tunnelname = args.delete[0]
+    _Script_Delete_Tunnel = ['config vpn ipsec phase2-interface' + '\n',
+                             'delete' + _del_tunnelname+'\n',
+                             'end'+'\n',
+                             'config vpn ipsec phase1-interface' + '\n',
+                             'delete' + _del_tunnelname + '\n',
+                             'end' + '\n'
+                             ]
+
+    # Read credential config
+    _firewall = config['Credentials']['firewall']
+    _fwport = config['Credentials']['port']
+    _fwuser = config['Credentials']['user']
+    _fwpass = config['Credentials']['pass']
+
+    delete_tunnels = ListTunnels(_firewall, _fwport, _fwuser, _fwpass, _Script_Delete_Tunnel)
+    print(_firewall, _fwport, _fwuser, _fwpass, _Script_Delete_Tunnel)
+    print(delete_tunnels)
 
 elif args.list:
-    print('list')
+    # print('list')
     _Script_Get_Tunnels = ['get vpn ipsec tunnel summary' + '\n',]
 
     # Read credential config
@@ -231,7 +257,7 @@ elif args.list:
     _fwpass = config['Credentials']['pass']
 
     get_tunnels = ListTunnels(_firewall, _fwport, _fwuser, _fwpass, _Script_Get_Tunnels)
-    print(_firewall, _fwport, _fwuser, _fwpass, _Script_Get_Tunnels)
-    print(get_tunnels)
+    # print(_firewall, _fwport, _fwuser, _fwpass, _Script_Get_Tunnels)
+    print(*get_tunnels, sep='\n')
 
 
