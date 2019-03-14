@@ -30,9 +30,9 @@ def SendAndCheck(_host,_port,_username,_password,_command):
     output_list=''
     for item in _command:
 
-        print('log output', output_list)
-        print('positive action chosen cycle :', item_number)
-        print('the command to send :', _command[item_number])
+        # print('log output', output_list)
+        # print('positive action chosen cycle :', item_number)
+        # print('the command to send :', _command[item_number])
 
         # Sending command
         corrected_command = str(_command[item_number])
