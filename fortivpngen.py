@@ -15,8 +15,6 @@ def config_data():
     with open('./config.yml', 'r') as ymlfile:
         config_data = yaml.load(ymlfile)
     return config_data
-
-
 def SendAndCheck(_host,_port,_username,_password,_command):
     logging.getLogger("paramiko").setLevel(logging.DEBUG)  # for example
     ssh = paramiko.SSHClient()
@@ -64,7 +62,6 @@ def SendAndCheck(_host,_port,_username,_password,_command):
     channel.close()
     ssh.close()
     return success
-
 def ListTunnels(_host,_port,_username,_password,_command):
     logging.getLogger("paramiko").setLevel(logging.DEBUG)  # for example
     ssh = paramiko.SSHClient()
@@ -120,7 +117,6 @@ def ListTunnels(_host,_port,_username,_password,_command):
     channel.close()
     ssh.close()
     return tunnel_list
-
 def generatedpsk(secret_length):
     stringSource = string.ascii_letters + string.digits + string.punctuation
     password = secrets.choice(string.ascii_lowercase)

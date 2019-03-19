@@ -3,9 +3,13 @@ A script that creates vpn tunnels on fortios firewalls.
 It is important to understand that this script ist created to use with a automation tool like
 puppet, chef  
 
+It connects to firewall using an ssh user and pushes cli scripts for necessary configurations
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/nr1l1f048QI/0.jpg)](http://www.youtube.com/watch?v=nr1l1f048QI "Watch in action")
+
 A yaml config file for constants
  
-generated key length
+generated key length that specified in yaml file
  
 
 phase1 encryption details
