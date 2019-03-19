@@ -117,6 +117,53 @@ def ListTunnels(_host,_port,_username,_password,_command):
     channel.close()
     ssh.close()
     return tunnel_list
+def DeleteAndCheck(_host,_port,_username,_password,_command):
+    logging.getLogger("paramiko").setLevel(logging.DEBUG)  # for example
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(_host, _port, _username, _password, allow_agent=False,look_for_keys=False)
+    print('connection to Fortigate established')
+    # print('item count :',len(_command),_command)
+    channel = ssh.invoke_shell()
+    item_number=0
+    output_list=''
+    for item in _command:
+
+        # print('log output', output_list)
+        # print('positive action chosen cycle :', item_number)
+        # print('the command to send :', _command[item_number])
+
+        # Sending command
+        corrected_command = str(_command[item_number])
+        channel.send(corrected_command)
+        time.sleep(1)
+
+        # command sent receiving output
+        output = channel.recv(2048)
+        new_text = str(output)
+        remove_trails = new_text.split('\\r')
+        output_list = [item.strip('\\n') for item in remove_trails]
+
+        # Error checking
+        if 'Command fail.' in str(output_list):
+            print('Command fail catched', str(output_list))
+            print('error in command closing channel')
+            success = False
+            return success
+        if  'Unknown action' in str(output_list):
+            print('Unknown action catched', str(output_list))
+            print('error in command closing channel')
+            success = False
+            # return success
+        else:
+            print(str(output_list))
+            print('command sent\n\n')
+            item_number = item_number + 1
+            success = True
+    channel.close()
+    ssh.close()
+    return success
 def generatedpsk(secret_length):
     stringSource = string.ascii_letters + string.digits + string.punctuation
     password = secrets.choice(string.ascii_lowercase)
@@ -144,6 +191,7 @@ parser.add_argument('-C','--create',
                     help='vpn tunnel creator requires 5 parameters name, interfece,remote gatewayip, source net, destination net')
 
 parser.add_argument('-D','--delete',
+                    nargs='+',
                     required=False,
                     help='tunnel delete requires 1 paramaeter which is the name of tunnel')
 
@@ -222,13 +270,14 @@ if args.create:
     print(addnew_tunnel)
 
 elif args.delete:
-    print("delete")
+    print("operaiton : delete")
     _del_tunnelname = args.delete[0]
+    print('tunnel name :',_del_tunnelname)
     _Script_Delete_Tunnel = ['config vpn ipsec phase2-interface' + '\n',
-                             'delete' + _del_tunnelname+'\n',
+                             'delete ' + _del_tunnelname+'-p2'+'\n',
                              'end'+'\n',
                              'config vpn ipsec phase1-interface' + '\n',
-                             'delete' + _del_tunnelname + '\n',
+                             'delete ' + _del_tunnelname + '\n',
                              'end' + '\n'
                              ]
 
@@ -238,7 +287,7 @@ elif args.delete:
     _fwuser = config['Credentials']['user']
     _fwpass = config['Credentials']['pass']
 
-    delete_tunnels = ListTunnels(_firewall, _fwport, _fwuser, _fwpass, _Script_Delete_Tunnel)
+    delete_tunnels = DeleteAndCheck(_firewall, _fwport, _fwuser, _fwpass, _Script_Delete_Tunnel)
     print(_firewall, _fwport, _fwuser, _fwpass, _Script_Delete_Tunnel)
     print(delete_tunnels)
 
